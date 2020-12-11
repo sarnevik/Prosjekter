@@ -1,55 +1,26 @@
 #include "mainwindow.h"
-
 #include <QApplication>
 
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
+
 #include <QtSerialPort/QSerialPort>
-
 #include <QtSerialPort/QSerialPortInfo>
+#include <QString>
 
-#include <cstdio>
-
-#include <QTextStream>
-
-#include <iostream>
+QT_USE_NAMESPACE
 
 int main(int argc, char *argv[])
 {
+    QApplication a(argc, argv);
+    QSerialPortInfo info("/dev/ttyACM4");
 
-    QCoreApplication a{argc, argv};
-        QTextStream in{stdin};
-        QTextStream out{stdout};
-
-        QSerialPort port;
-        port.setPortName("COM6");
-        port.setBaudRate(9600);
-        port.setDataBits(QSerialPort::Data8);
-        port.setParity(QSerialPort::NoParity);
-        port.setStopBits(QSerialPort::OneStop);
-        port.setFlowControl(QSerialPort::NoFlowControl);
-
-        if (!port.open(QSerialPort::ReadWrite)) {
-            out << "Error opening serial port: " << port.errorString() << Qt::endl;
-            return 1;
-        }
-
-        while(true)
-        {
-            out << "> ";
-            auto cmd = in.readLine().toLatin1();
-            if (cmd.length() < 1)
-                continue;
-
-            port.write(cmd);
-
-            while (!port.canReadLine())
-                port.waitForReadyRead(-1);
-
-            while (port.canReadLine())
-                out << "< " << port.readLine(); // lines are already terminated
-        }
-
+    // Check info of the port
+    qDebug() << "Name: " << info.portName();
+    qDebug() << "Manufacturer " << info.manufacturer();
+    qDebug() << "Busy: " << info.isBusy() << Qt::endl;
+    QSerialPort serial;
     MainWindow w;
     w.show();
     return a.exec();
-
 }
